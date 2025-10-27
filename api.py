@@ -9,7 +9,7 @@ async def compile_code(request: dict):
     pass
 
 # ADD THIS NEW ROUTE for compatibility
-@app.post("/api/v1/submissions")
+@app.post("/api/compile")
 async def submissions_v1(request: dict):
     """
     Compatibility endpoint for Judge0-style requests
