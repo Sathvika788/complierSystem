@@ -2,7 +2,7 @@
 import requests
 import time
 
-base_url = "http://localhost:8001"
+base_url = "https://compiler-api-6k95.onrender.com/"
 
 def test_all_languages():
     print("🚀 Testing All 8 Languages (Including SQL!)")
