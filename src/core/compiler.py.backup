@@ -1,0 +1,91 @@
+import asyncio
+import tempfile
+import os
+from typing import Dict, Any, Optional
+from pathlib import Path
+import time
+import logging
+
+from src.languages.base import BaseLanguage
+from src.languages.python import PythonLanguage
+from src.languages.javascript import JavaScriptLanguage
+from src.languages.java import JavaLanguage
+from src.languages.c_cpp import CppLanguage, CLanguage
+from src.languages.go import GoLanguage
+from src.languages.rust import RustLanguage
+from src.languages.sql import SQLLanguage
+from src.core.security import SecurityManager
+
+logger = logging.getLogger(__name__)
+
+class CompilerManager:
+    def __init__(self):
+        self.languages: Dict[int, BaseLanguage] = {}
+        self.security_manager = SecurityManager()
+        self._register_languages()
+        logger.info("CompilerManager initialized with %d languages", len(self.languages))
+    
+    def _register_languages(self):
+        """Register all supported languages"""
+        self.languages[1] = CLanguage()
+        self.languages[2] = CppLanguage()
+        self.languages[3] = PythonLanguage()
+        self.languages[4] = JavaLanguage()
+        self.languages[5] = JavaScriptLanguage()
+        self.languages[6] = GoLanguage()
+        self.languages[7] = RustLanguage()
+        self.languages[8] = SQLLanguage()
+        
+        for lang_id, handler in self.languages.items():
+            logger.debug("Registered language: %s (ID: %d)", handler.name, lang_id)
+    
+    def get_supported_languages(self):
+        return list(self.languages.keys())
+    
+    async def execute_code(self, source_code: str, language_id: int, 
+                         stdin: str = "", cpu_time_limit: float = 5.0,
+                         memory_limit: int = 256000) -> Dict[str, Any]:
+        
+        logger.info("Executing code for language ID: %d", language_id)
+        
+        if language_id not in self.languages:
+            error_msg = f"Unsupported language: {language_id}"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        language_handler = self.languages[language_id]
+        logger.debug("Using language handler: %s", language_handler.name)
+        
+        # Create temporary execution directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            start_time = time.time()
+            
+            try:
+                logger.debug("Created temp directory: %s", temp_dir)
+                result = await language_handler.execute(
+                    source_code=source_code,
+                    stdin=stdin,
+                    temp_dir=temp_dir,
+                    cpu_time_limit=cpu_time_limit,
+                    memory_limit=memory_limit
+                )
+                
+                execution_time = time.time() - start_time
+                result["execution_time"] = round(execution_time, 3)
+                
+                logger.info("Execution completed in %.3f seconds. Exit code: %d", 
+                           execution_time, result.get("exit_code", -1))
+                
+                return result
+                
+            except Exception as e:
+                execution_time = time.time() - start_time
+                logger.error("Execution failed after %.3f seconds: %s", execution_time, str(e))
+                return {
+                    "stdout": "",
+                    "stderr": f"Execution failed: {str(e)}",
+                    "exit_code": 1,
+                    "execution_time": round(execution_time, 3)
+                }
+
+compiler_manager = CompilerManager()

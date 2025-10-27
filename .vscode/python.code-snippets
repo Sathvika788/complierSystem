@@ -1,0 +1,61 @@
+{
+    "FastAPI Route": {
+        "prefix": "fastapi-route",
+        "body": [
+            "from fastapi import APIRouter, HTTPException",
+            "from pydantic import BaseModel",
+            "from typing import Optional",
+            "",
+            "router = APIRouter(prefix=\"/${1:endpoint}\", tags=[\"${1:endpoint}\"])",
+            "",
+            "class ${2:RequestModel}(BaseModel):",
+            "    ${3:field}: ${4:str}",
+            "",
+            "@router.get(\"\")",
+            "async def get_${1:endpoint}():",
+            "    return {\"message\": \"GET ${1:endpoint}\"}",
+            "",
+            "@router.post(\"\")",
+            "async def create_${1:endpoint}(request: ${2:RequestModel}):",
+            "    return {\"message\": \"POST ${1:endpoint}\", \"data\": request.dict()}",
+            ""
+        ],
+        "description": "Create a new FastAPI route"
+    },
+    "Language Handler": {
+        "prefix": "language-handler",
+        "body": [
+            "from src.languages.base import BaseLanguage",
+            "",
+            "class ${1:LanguageName}Language(BaseLanguage):",
+            "    @property",
+            "    def name(self):",
+            "        return \"${1:LanguageName}\"",
+            "    ",
+            "    @property",
+            "    def extension(self):",
+            "        return \".${2:ext}\"",
+            "    ",
+            "    async def execute(self, source_code: str, stdin: str,",
+            "                     temp_dir: str, cpu_time_limit: float,",
+            "                     memory_limit: int) -> Dict[str, Any]:",
+            "        ",
+            "        # Write source code to file",
+            "        source_file = f\"{temp_dir}/main{self.extension}\"",
+            "        with open(source_file, 'w') as f:",
+            "            f.write(source_code)",
+            "        ",
+            "        # ${3:Execute code}",
+            "        result = await self.run_command(",
+            "            f\"${4:command}\",",
+            "            stdin=stdin,",
+            "            timeout=cpu_time_limit,",
+            "            cwd=temp_dir",
+            "        )",
+            "        ",
+            "        return result",
+            ""
+        ],
+        "description": "Create a new language handler"
+    }
+}

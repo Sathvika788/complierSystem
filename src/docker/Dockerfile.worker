@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    openjdk-17-jdk \
+    nodejs \
+    npm \
+    golang \
+    rustc \
+    sqlite3 \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY src/ ./src/
+
+CMD ["python", "-m", "src.workers.queue_manager"]

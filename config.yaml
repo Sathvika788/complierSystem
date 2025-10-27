@@ -1,0 +1,19 @@
+languages:
+  c:
+    compile_cmd: "gcc {source} -o {executable}"
+    run_cmd: "./{executable}"
+  python:
+    run_cmd: "python {source}"
+  sql:
+    run_cmd: "sqlite3"
+
+security:
+  max_cpu_time: 30
+  max_memory: 512000
+  max_processes: 50
+  read_only_filesystem: true
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
