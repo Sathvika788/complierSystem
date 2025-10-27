@@ -158,3 +158,13 @@ async def get_supported_languages():
             {"id": 7, "name": "Rust"}
         ]
     }
+@app.get("/debug/routes")
+async def debug_routes():
+    routes = []
+    for route in app.routes:
+        routes.append({
+            "path": route.path,
+            "name": route.name,
+            "methods": getattr(route, 'methods', [])
+        })
+    return {"routes": routes}
