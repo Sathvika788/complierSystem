@@ -1,8 +1,1 @@
-[build]
-builder = "nixpacks"
-
-[deploy]
-startCommand = "uvicorn api:app --host 0.0.0.0 --port $PORT"
-
-[build.environment]
-NIXPKGS_ARCH = "x86_64-linux"
+python -m uvicorn
