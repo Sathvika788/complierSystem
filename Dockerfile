@@ -1,27 +1,37 @@
 FROM python:3.9-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies and ALL compilers
+# Install dependencies safely
 RUN apt-get update && apt-get install -y \
     gcc g++ \
     default-jdk \
-    nodejs npm \
-    golang \
-    rustc cargo \
+    curl \
+    python3-dev \
+    make \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install Node.js properly (Debian Trixie nodejs is broken)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# Install Go manually (Debian Trixie repo breaks)
+RUN curl -LO https://golang.org/dl/go1.21.1.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz && \
+    rm go1.21.1.linux-amd64.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Install Rust the correct way
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install Python requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy full project
 COPY . .
 
-# Expose API port
 EXPOSE 8000
 
-# Start FastAPI server
 CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
